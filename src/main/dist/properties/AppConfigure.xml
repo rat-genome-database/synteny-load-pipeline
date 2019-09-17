@@ -1,0 +1,21 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+    <bean id="manager" class="edu.mcw.rgd.Manager">
+        <property name="version" value="--Synteny Load pipeline -- ver. 1.0.0 -- Jul 09, 2019 --" />
+        <property name="pipelineName" value="Synteny Load Pipeline" />
+        <property name="speciesProcessed" >
+            <list>
+                <value>Rat</value>
+                <value>Mouse</value>
+                <value>Dog</value>
+                <value>Pig</value>
+                <value>Bonobo</value>
+                <value>Human</value>
+            </list>
+        </property>
+        <property name="dao" ref="dao"/>
+    </bean>
+
+    <bean id="dao" class="edu.mcw.rgd.DAO">
+    </bean>
+</beans>

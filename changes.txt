@@ -1,0 +1,2 @@
+v. 1.0.0, Sep 11, 2019
+  -first pipeline version, generate synteny blocks for all species
