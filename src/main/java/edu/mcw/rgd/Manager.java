@@ -56,7 +56,8 @@ public class Manager {
 
         String species1 = SpeciesType.getCommonName(speciesTypeKey1);
         log.info("START: species = " + species1);
-        logSummary.info("Summary for species "+ species1);
+        logSummary.info("Summary for species "+ species1+"\n");
+        logSummary.info("=========================\n");
         List<String> species = getSpeciesProcessed();
         for(String species2: species) {
             int speciesTypeKey2 = SpeciesType.parse(species2);
@@ -121,7 +122,7 @@ public class Manager {
             dao.insertSynteny(block,mapKey1,mapKey2);
         }
 
-        logSummary.info("Blocks between assemblies "+mapKey1+ " and "+mapKey2+ "=" + blocks.size());
+        logSummary.info("Blocks between assemblies "+mapKey1+ " and "+mapKey2+ "=" + blocks.size()+"\n");
 
 
     }
