@@ -3,14 +3,18 @@
     <bean id="manager" class="edu.mcw.rgd.Manager">
         <property name="version" value="--Synteny Load pipeline -- ver. 1.0.0 -- Jul 09, 2019 --" />
         <property name="pipelineName" value="Synteny Load Pipeline" />
-        <property name="speciesProcessed" >
+        <property name="assemblies" >
             <list>
-                <value>Rat</value>
-                <value>Mouse</value>
-                <value>Dog</value>
-                <value>Pig</value>
-                <value>Bonobo</value>
-                <value>Human</value>
+                <value>360</value>
+                <value>70</value>
+                <value>60</value>
+                <value>35</value>
+                <value>18</value>
+                <value>631</value>
+                <value>911</value>
+                <value>511</value>
+                <value>38</value>
+                <value>17</value>
             </list>
         </property>
         <property name="dao" ref="dao"/>

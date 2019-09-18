@@ -1,8 +1,10 @@
 package edu.mcw.rgd;
 
+import edu.mcw.rgd.dao.impl.MapDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.ontology.Annotation;
 import edu.mcw.rgd.process.Utils;
+import edu.mcw.rgd.process.mapping.MapManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -19,7 +21,7 @@ public class Manager {
     private DAO dao;
     private String version;
     private String pipelineName;
-    private List<String> speciesProcessed;
+    private List<Integer> assemblies;
     private Map< MappedOrtholog,Integer> indexedGenes;
     private  Map<MappedOrtholog,Integer> indexedOrthologs;
 
@@ -33,10 +35,10 @@ public class Manager {
         new XmlBeanDefinitionReader(bf).loadBeanDefinitions(new FileSystemResource("properties/AppConfigure.xml"));
         Manager manager = (Manager) (bf.getBean("manager"));
 
-        List<String> species = manager.getSpeciesProcessed();
+        List<Integer> assemblies = manager.getAssemblies();
         try {
-            for(String species2: species ){
-                manager.run(species2);
+            for(int assembly2: assemblies ){
+                manager.run(assembly2);
             }
 
         } catch (Exception e) {
@@ -45,39 +47,39 @@ public class Manager {
         }
     }
 
-    void run(String speciesName) throws Exception {
+    void run(int mapKey) throws Exception {
 
         long startTime = System.currentTimeMillis();
-
-        int speciesTypeKey1 = SpeciesType.parse(speciesName);
+        MapDAO mdao = new MapDAO();
+        int speciesTypeKey1 = mdao.getSpeciesTypeKeyForMap(mapKey);
         if( SpeciesType.getTaxonomicId(speciesTypeKey1)==0 ) {
-            throw new Exception("ERROR: invalid species1: "+speciesName);
+            throw new Exception("ERROR: invalid mapKey: "+mapKey);
         }
 
         String species1 = SpeciesType.getCommonName(speciesTypeKey1);
-        log.info("START: species = " + species1);
+        log.info("START: species = " + species1 + " and assembly "+ mapKey);
         logSummary.info("Summary for species "+ species1+"\n");
         logSummary.info("=========================\n");
-        List<String> species = getSpeciesProcessed();
-        for(String species2: species) {
-            int speciesTypeKey2 = SpeciesType.parse(species2);
+        List<Integer> assemblies = getAssemblies();
+        for(int mapKey2: assemblies) {
+            int speciesTypeKey2 = mdao.getSpeciesTypeKeyForMap(mapKey2);
             if( SpeciesType.getTaxonomicId(speciesTypeKey2)==0 ) {
-                throw new Exception("ERROR: invalid species2: "+species2);
+                throw new Exception("ERROR: invalid mapKey2: "+mapKey2);
             }
-
+            String species2 = SpeciesType.getCommonName(speciesTypeKey2);
             if(speciesTypeKey1 != speciesTypeKey2) {
-                log.info("START: Synteny between species1 = " + species1 + " and species2 = " + species2);
-                handle(speciesTypeKey1, speciesTypeKey2);
+                log.info("START: Synteny between assembly1 = " + mapKey + " and assembly2 = " + mapKey2);
+                handle(mapKey, mapKey2,speciesTypeKey1,speciesTypeKey2);
             }
         }
         log.info("END:  time elapsed: " + Utils.formatElapsedTime(startTime, System.currentTimeMillis()));
         log.info("===");
     }
 
-    void handle(int speciesTypeKey1, int speciesTypeKey2) throws Exception {
+    void handle(int mapKey1, int mapKey2, int speciesTypeKey1, int speciesTypeKey2) throws Exception {
 
-        int mapKey1 = dao.getPrimaryAssembly(speciesTypeKey1);
-        int mapKey2 = dao.getPrimaryAssembly(speciesTypeKey2);
+        String map1 = MapManager.getInstance().getMap(mapKey1).getName();
+        String map2 = MapManager.getInstance().getMap(mapKey2).getName();
         List<MappedOrtholog> orthologs = dao.getAllOrthologs(speciesTypeKey1,speciesTypeKey2,mapKey1,mapKey2);
 
         log.info("Remove gene overlaps for Rat");
@@ -122,7 +124,7 @@ public class Manager {
             dao.insertSynteny(block,mapKey1,mapKey2);
         }
 
-        logSummary.info("Blocks between assemblies "+mapKey1+ " and "+mapKey2+ "=" + blocks.size()+"\n");
+        logSummary.info("Blocks between assemblies "+map1+ " and "+map2+ "=" + blocks.size()+"\n");
 
 
     }
@@ -136,9 +138,11 @@ public class Manager {
         int index = indexedOrthologs.get(syntenyBlock.getMappedOrtholog());
         MappedOrtholog ortholog = syntenyBlock.getMappedOrtholog();
         int corientation = 0;
-        if(pair.getSrcStrand().equalsIgnoreCase(pair.getDestStrand()))
-            corientation = 1;
-        else corientation = -1;
+        if(pair.getSrcStrand() != null && pair.getDestStrand() != null)
+            if(pair.getSrcStrand().equalsIgnoreCase(pair.getDestStrand()))
+                corientation = 1;
+            else corientation = -1;
+        else corientation = 1;
 
         return (pair.getSrcChromosome().equalsIgnoreCase(ortholog.getSrcChromosome()) && pair.getDestChromosome().equalsIgnoreCase(ortholog.getDestChromosome())
             && orientation == corientation &&  indexedOrthologs.get(pair) == index + orientation );
@@ -150,9 +154,11 @@ public class Manager {
         log.info("Creating the new block");
         SyntenyBlock block = new SyntenyBlock();
 
-        if(pair.getSrcStrand().equalsIgnoreCase(pair.getDestStrand()))
-            block.setOrientation(1);
-        else block.setOrientation(-1);
+        if(pair.getSrcStrand() != null && pair.getDestStrand() != null)
+            if(pair.getSrcStrand().equalsIgnoreCase(pair.getDestStrand()))
+                block.setOrientation(1);
+            else block.setOrientation(-1);
+        else block.setOrientation(1);
         block.setMappedOrtholog(pair);
         return block;
     }
@@ -348,12 +354,12 @@ public class Manager {
         return pipelineName;
     }
 
-    public List<String> getSpeciesProcessed() {
-        return speciesProcessed;
+    public List<Integer> getAssemblies() {
+        return assemblies;
     }
 
-    public void setSpeciesProcessed(List<String> speciesProcessed) {
-        this.speciesProcessed = speciesProcessed;
+    public void setAssemblies(List<Integer> assemblies) {
+        this.assemblies = assemblies;
     }
 
     class SyntenyBlock implements Comparable{
