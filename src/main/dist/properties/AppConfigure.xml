@@ -22,4 +22,70 @@
 
     <bean id="dao" class="edu.mcw.rgd.DAO">
     </bean>
+
+    <bean id="ucscLoader" class="edu.mcw.rgd.UcscLoader">
+        <property name="version" value="Synteny Ucsc Loader  -- version 2021-11-03" />
+        <property name="downloadPrefix" value="https://hgdownload.soe.ucsc.edu/goldenPath/"/>
+        <property name="netFileList">
+            <list>
+                <value>631|17|netCanFam3Hg19.txt.gz|canFam3/database/netHg19.txt.gz</value>
+                <value>631|38|netCanFam3Hg38.txt.gz|canFam3/database/netHg38.txt.gz</value>
+                <value>631|35|netCanFam3Mm10.txt.gz|canFam3/database/netMm10.txt.gz</value>
+                <value>631|360|netCanFam3Rn6.txt.gz|canFam3/database/netRn6.txt.gz</value>
+
+                <value>1311|38|netChlSab2Hg38.txt.gz|chlSab2/database/netHg38.txt.gz</value>
+
+                <value>1410|35|netHetGla2Mm10.txt.gz|hetGla2/database/netMm10.txt.gz</value>
+
+                <value>17|631|netHg19CanFam3.txt.gz|hg19/database/netCanFam3.txt.gz</value>
+                <value>17|35 |netHg19Mm10.txt.gz   |hg19/database/netMm10.txt.gz</value>
+                <value>17|60 |netHg19Rn4.txt.gz    |hg19/database/netRn4.txt.gz</value>
+
+                <value>38|1311|netHg38ChlSab2.txt.gz|hg38/database/netChlSab2.txt.gz</value>
+                <value>38|35  |netHg38Mm10.txt.gz   |hg38/database/netMm10.txt.gz</value>
+                <value>38|239 |netHg38Mm39.txt.gz   |hg38/database/netMm39.txt.gz</value>
+                <value>38|513 |netHg38PanPan3.txt.gz|hg38/database/netPanPan3.txt.gz</value>
+                <value>38|360 |netHg38Rn6.txt.gz    |hg38/database/netRn6.txt.gz</value>
+                <value>38|372 |netHg38Rn7.txt.gz    |hg38/database/netRn7.txt.gz</value>
+                <value>38|911 |netHg38SusScr11.txt.gz|hg38/database/netSusScr11.txt.gz</value>
+
+                <value>35|1410|netMm10HetGla2.txt.gz|mm10/database/netHetGla2.txt.gz</value>
+                <value>35|17  |netMm10Hg19.txt.gz   |mm10/database/netHg19.txt.gz</value>
+                <value>35|38  |netMm10Hg38.txt.gz   |mm10/database/netHg38.txt.gz</value>
+                <value>35|513 |netMm10PanPan3.txt.gz|mm10/database/netPanPan3.txt.gz</value>
+                <value>35|360 |netMm10Rn6.txt.gz    |mm10/database/netRn6.txt.gz</value>
+                <value>35|372 |netMm10Rn7.txt.gz    |mm10/database/netRn7.txt.gz</value>
+                <value>35|911 |netMm10SusScr11.txt.gz|mm10/database/netSusScr11.txt.gz</value>
+
+                <value>239|38  |netMm39Hg38.txt.gz   |mm39/database/netHg38.txt.gz</value>
+                <value>239|513 |netMm39PanPan3.txt.gz|mm39/database/netPanPan3.txt.gz</value>
+                <value>239|360 |netMm39Rn6.txt.gz    |mm39/database/netRn6.txt.gz</value>
+                <value>239|372 |netMm39Rn7.txt.gz    |mm39/database/netRn7.txt.gz</value>
+                <value>239|910 |netMm39SusScr3.txt.gz|mm39/database/netSusScr3.txt.gz</value>
+
+                <value>513|38  |netPanPan3Hg38.txt.gz |panPan3/database/netHg38.txt.gz</value>
+                <value>513|35  |netPanPan3Mm10.txt.gz |panPan3/database/netMm10.txt.gz</value>
+                <value>513|239 |netPanPan3Mm39.txt.gz |panPan3/database/netMm39.txt.gz</value>
+
+                <value>60|17|netRn4Hg19.txt.gz|rn4/database/netHg19.txt.gz</value>
+
+                <value>70|35|netRn5Mm10.txt.gz|rn5/database/netMm10.txt.gz</value>
+
+                <value>360|631|netRn6CanFam3.txt.gz|rn6/database/netCanFam3.txt.gz</value>
+                <value>360|38 |netRn6Hg38.txt.gz   |rn6/database/netHg38.txt.gz</value>
+                <value>360|35 |netRn6Mm10.txt.gz   |rn6/database/netMm10.txt.gz</value>
+                <value>360|239|netRn6Mm39.txt.gz   |rn6/database/netMm39.txt.gz</value>
+
+                <value>372|38 |netRn7Hg38.txt.gz|rn7/database/netHg38.txt.gz</value>
+                <value>372|35 |netRn7Mm10.txt.gz|rn7/database/netMm10.txt.gz</value>
+                <value>372|239|netRn7Mm39.txt.gz|rn7/database/netMm39.txt.gz</value>
+
+                <value>910|35 |netSusScr3Mm10.txt.gz|susScr3/database/netMm10.txt.gz</value>
+                <value>910|239|netSusScr3Mm39.txt.gz|susScr3/database/netMm39.txt.gz</value>
+
+                <value>911|38 |netSusScr11Hg38.txt.gz|susScr11/database/netHg38.txt.gz</value>
+                <value>911|35 |netSusScr11Mm10.txt.gz|susScr11/database/netMm10.txt.gz</value>
+            </list>
+        </property>
+    </bean>
 </beans>

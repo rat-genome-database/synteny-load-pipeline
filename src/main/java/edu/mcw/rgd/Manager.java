@@ -2,7 +2,6 @@ package edu.mcw.rgd;
 
 import edu.mcw.rgd.dao.impl.MapDAO;
 import edu.mcw.rgd.datamodel.*;
-import edu.mcw.rgd.datamodel.ontology.Annotation;
 import edu.mcw.rgd.process.Utils;
 import edu.mcw.rgd.process.mapping.MapManager;
 import org.apache.log4j.Logger;
@@ -10,10 +9,8 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class Manager {
@@ -35,18 +32,39 @@ public class Manager {
         new XmlBeanDefinitionReader(bf).loadBeanDefinitions(new FileSystemResource("properties/AppConfigure.xml"));
         Manager manager = (Manager) (bf.getBean("manager"));
 
-        List<Integer> assemblies = manager.getAssemblies();
-        try {
-            for(int assembly2: assemblies ){
-                manager.run(assembly2);
-            }
 
+        // load data into SYNTENY_UCSC and SYNTENY_UCSC_GAPS tables
+        boolean useUcscLoader = false;
+        for( String arg:  args ) {
+            if( arg.contains("ucsc") ) {
+                useUcscLoader = true;
+            }
+        }
+
+        try {
+
+            if( useUcscLoader ) {
+                UcscLoader ucscLoader = (UcscLoader) bf.getBean("ucscLoader");
+                ucscLoader.run();
+            } else {
+                // use original orthology-based loader
+                List<Integer> assemblies = manager.getAssemblies();
+                for (int assembly2 : assemblies) {
+                    manager.run(assembly2);
+                }
+            }
         } catch (Exception e) {
             manager.log.error(e);
             throw e;
         }
     }
 
+    /**
+     * original code to create synteny blocks based on orthology;
+     *  superceeded by loading synteny blocks -- chain nets -- from ucsc
+     * @param mapKey
+     * @throws Exception
+     */
     void run(int mapKey) throws Exception {
 
         long startTime = System.currentTimeMillis();

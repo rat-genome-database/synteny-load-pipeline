@@ -1,3 +1,6 @@
+Nov 11, 2021
+  added loading of data from UCSC synteny chain net files
+
 May 10, 2020
   updated jar dependencies
 

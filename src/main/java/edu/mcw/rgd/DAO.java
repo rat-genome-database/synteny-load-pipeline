@@ -3,7 +3,6 @@ package edu.mcw.rgd;
 import edu.mcw.rgd.dao.AbstractDAO;
 import edu.mcw.rgd.dao.impl.OrthologDAO;
 import edu.mcw.rgd.datamodel.*;
-import edu.mcw.rgd.process.mapping.MapManager;
 
 import java.util.*;
 
@@ -12,8 +11,7 @@ import java.util.*;
  * @author hsnalabolu
  * wrapper to handle all DAO code
  */
-public class DAO extends AbstractDAO{
-
+public class DAO extends AbstractDAO {
 
     OrthologDAO orthologDAO = new OrthologDAO();
 
@@ -32,11 +30,6 @@ public class DAO extends AbstractDAO{
     public List<MappedOrtholog> getAllOrthologs(int speciesTypeKey1, int speciesTypeKey2,int mapKey1,int mapKey2) throws Exception {
         return orthologDAO.getAllMappedOrthologs(speciesTypeKey1, speciesTypeKey2,mapKey1,mapKey2);
     }
-
-public int getPrimaryAssembly(int speciesTypeKey) throws Exception{
-    edu.mcw.rgd.datamodel.Map map = MapManager.getInstance().getReferenceAssembly(speciesTypeKey);
-    return map.getKey();
-}
 
     public void deleteSyntenyBlocks(int mapKey1, int mapKey2) throws Exception{
         String sql = "DELETE FROM SYNTENY WHERE MAP_KEY1 = "+mapKey1+ " AND MAP_KEY2 = "+mapKey2;
