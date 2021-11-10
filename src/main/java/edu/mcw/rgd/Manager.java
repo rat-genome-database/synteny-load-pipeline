@@ -1,6 +1,5 @@
 package edu.mcw.rgd;
 
-import edu.mcw.rgd.dao.impl.MapDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.Utils;
 import edu.mcw.rgd.process.mapping.MapManager;
@@ -19,7 +18,6 @@ public class Manager {
     private String version;
     private String pipelineName;
     private List<Integer> assemblies;
-    private Map< MappedOrtholog,Integer> indexedGenes;
     private  Map<MappedOrtholog,Integer> indexedOrthologs;
 
     Logger log = Logger.getLogger("core");
@@ -68,8 +66,7 @@ public class Manager {
     void run(int mapKey) throws Exception {
 
         long startTime = System.currentTimeMillis();
-        MapDAO mdao = new MapDAO();
-        int speciesTypeKey1 = mdao.getSpeciesTypeKeyForMap(mapKey);
+        int speciesTypeKey1 = dao.getSpeciesTypeKeyForMap(mapKey);
         if( SpeciesType.getTaxonomicId(speciesTypeKey1)==0 ) {
             throw new Exception("ERROR: invalid mapKey: "+mapKey);
         }
@@ -80,7 +77,7 @@ public class Manager {
         logSummary.info("=========================\n");
         List<Integer> assemblies = getAssemblies();
         for(int mapKey2: assemblies) {
-            int speciesTypeKey2 = mdao.getSpeciesTypeKeyForMap(mapKey2);
+            int speciesTypeKey2 = dao.getSpeciesTypeKeyForMap(mapKey2);
             if( SpeciesType.getTaxonomicId(speciesTypeKey2)==0 ) {
                 throw new Exception("ERROR: invalid mapKey2: "+mapKey2);
             }
@@ -125,10 +122,11 @@ public class Manager {
             return cmp;
         });
 
-         indexedGenes = result.stream().collect(
-                Collectors.toMap(x -> x,x -> result.indexOf(x)));
+        //Map< MappedOrtholog,Integer> indexedGenes;
+        //indexedGenes = result.stream().collect(
+        //        Collectors.toMap(x -> x,x -> result.indexOf(x)));
 
-        log.info("Generating the blocks");
+        log.debug("Generating the blocks");
         List<SyntenyBlock> blocks = generateBlocks(result);
 
         //Clean up existing blocks
@@ -144,12 +142,11 @@ public class Manager {
 
         logSummary.info("Blocks between assemblies "+map1+ " and "+map2+ "=" + blocks.size()+"\n");
 
-
     }
 
     private boolean merge(MappedOrtholog pair,SyntenyBlock syntenyBlock){
 
-        log.info("Checking merge condition of blocks");
+        log.debug("Checking merge condition of blocks");
         if(syntenyBlock == null)
             return false;
         int orientation = syntenyBlock.getOrientation();
@@ -169,7 +166,7 @@ public class Manager {
 
     private SyntenyBlock createBlock(MappedOrtholog pair){
 
-        log.info("Creating the new block");
+        log.debug("Creating the new block");
         SyntenyBlock block = new SyntenyBlock();
 
         if(pair.getSrcStrand() != null && pair.getDestStrand() != null)
@@ -183,7 +180,7 @@ public class Manager {
 
     private SyntenyBlock extendBlock(MappedOrtholog pair, SyntenyBlock block){
 
-        log.info("Extending the block");
+        log.debug("Extending the block");
 
         SyntenyBlock extendedblock = new SyntenyBlock();
         extendedblock.setOrientation(block.getOrientation());
@@ -214,8 +211,6 @@ public class Manager {
                currentBlock = createBlock(pair);
                blocks.add(currentBlock);
            }
-
-
        }
 
        return (blocks);
@@ -318,7 +313,7 @@ public class Manager {
         return blocks;
     }
 
-    private List<MappedOrtholog> removeRatGeneOverlaps(List<MappedOrtholog> orthologList) throws Exception {
+    private List<MappedOrtholog> removeRatGeneOverlaps(List<MappedOrtholog> orthologList) {
 
         MappedOrtholog pair = null;
         List<MappedOrtholog> result = new ArrayList<>();
@@ -333,7 +328,7 @@ public class Manager {
         return result;
     }
 
-    private List<MappedOrtholog> removeDestGeneOverlaps(List<MappedOrtholog> orthologList) throws Exception {
+    private List<MappedOrtholog> removeDestGeneOverlaps(List<MappedOrtholog> orthologList) {
 
         MappedOrtholog pair = null;
         List<MappedOrtholog> result = new ArrayList<>();

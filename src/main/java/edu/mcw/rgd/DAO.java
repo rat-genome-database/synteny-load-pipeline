@@ -1,6 +1,7 @@
 package edu.mcw.rgd;
 
 import edu.mcw.rgd.dao.AbstractDAO;
+import edu.mcw.rgd.dao.impl.MapDAO;
 import edu.mcw.rgd.dao.impl.OrthologDAO;
 import edu.mcw.rgd.datamodel.*;
 
@@ -13,8 +14,8 @@ import java.util.*;
  */
 public class DAO extends AbstractDAO {
 
+    MapDAO mapDAO = new MapDAO();
     OrthologDAO orthologDAO = new OrthologDAO();
-
 
     public String getConnectionInfo() {
         return orthologDAO.getConnectionInfo();
@@ -43,5 +44,9 @@ public class DAO extends AbstractDAO {
                 block.getMappedOrtholog().getSrcStopPos()+","+block.getMappedOrtholog().getDestStartPos()+","+block.getMappedOrtholog().getDestStopPos()+","+
                 block.getOrientation()+")";
         update(sql);
+    }
+
+    public int getSpeciesTypeKeyForMap(int mapKey) throws Exception {
+        return mapDAO.getSpeciesTypeKeyForMap(mapKey);
     }
 }
