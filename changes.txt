@@ -1,3 +1,6 @@
+Nov 12, 2021
+  added loading of scaffolds; implemented parallel loading
+
 Nov 11, 2021
   added loading of data from UCSC synteny chain net files
 

@@ -35,7 +35,7 @@
 
                 <value>1311|38|netChlSab2Hg38.txt.gz|chlSab2/database/netHg38.txt.gz</value>
 
-                <value>1410|35|netHetGla2Mm10.txt.gz|hetGla2/database/netMm10.txt.gz</value>
+                <value>1410|35|netHetGla2Mm10.txt.gz|hetGla2/database/netMm10.txt.gz | scaffold</value>
 
                 <value>17|631|netHg19CanFam3.txt.gz|hg19/database/netCanFam3.txt.gz</value>
                 <value>17|35 |netHg19Mm10.txt.gz   |hg19/database/netMm10.txt.gz</value>
@@ -49,7 +49,7 @@
                 <value>38|372 |netHg38Rn7.txt.gz    |hg38/database/netRn7.txt.gz</value>
                 <value>38|911 |netHg38SusScr11.txt.gz|hg38/database/netSusScr11.txt.gz</value>
 
-                <value>35|1410|netMm10HetGla2.txt.gz|mm10/database/netHetGla2.txt.gz</value>
+                <value>35|1410|netMm10HetGla2.txt.gz|mm10/database/netHetGla2.txt.gz | scaffold</value>
                 <value>35|17  |netMm10Hg19.txt.gz   |mm10/database/netHg19.txt.gz</value>
                 <value>35|38  |netMm10Hg38.txt.gz   |mm10/database/netHg38.txt.gz</value>
                 <value>35|513 |netMm10PanPan3.txt.gz|mm10/database/netPanPan3.txt.gz</value>

@@ -10,6 +10,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +24,7 @@ public class UcscLoader {
     private String version;
     private String downloadPrefix;
     private List<String> netFileList;
+    private boolean dropAndReload = true;
 
     Logger log = Logger.getLogger("status");
 
@@ -30,41 +33,72 @@ public class UcscLoader {
         log.info(getVersion());
         log.info("   "+dao.getConnectionInfo());
 
-        FileDownloader fd = new FileDownloader();
-
         List<String> processedAssemblies = new ArrayList<>(getNetFileList());
         Collections.shuffle(processedAssemblies);
 
-        for( String netFileInfo: processedAssemblies ) {
+        processedAssemblies.parallelStream().forEach( netFileInfo -> {
 
             String[] cols = netFileInfo.split("\\|");
             int mapKey1 = Integer.parseInt(cols[0].trim());
             int mapKey2 = Integer.parseInt(cols[1].trim());
             String localFileName = "data/"+(cols[2].trim());
             String remoteFileName = getDownloadPrefix()+(cols[3].trim());
+            boolean loadScaffolds = false;
+            if( cols.length>=5 ) {
+                String scaffoldText = cols[4].toLowerCase();
+                if( scaffoldText.contains("scaffold") ) {
+                    loadScaffolds = true;
+                }
+            }
 
+            FileDownloader fd = new FileDownloader();
             fd.setExternalFile(remoteFileName);
             fd.setLocalFile(localFileName);
-            String localFile = fd.downloadNew();
 
-            run(mapKey1, mapKey2, localFile);
-        }
+            try {
+                String localFile = fd.downloadNew();
+                run(mapKey1, mapKey2, localFile, loadScaffolds);
+            } catch( Exception e ) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
-    public void run(int mapKey1, int mapKey2, String fileName) throws Exception {
+    public void run(int mapKey1, int mapKey2, String fileName, boolean loadScaffolds) throws Exception {
 
         long time0 = System.currentTimeMillis();
 
-        SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        log.info("   "+fileName+" started at "+sdt.format(new Date(time0)));
+        StringBuffer msgBuf = new StringBuffer();
 
-        // see if we already loaded the data for this file
-        int rowCount = dao.getCount("SELECT count(*) FROM synteny_ucsc WHERE map_key1=? AND map_key2=?", mapKey1, mapKey2);
-        if( rowCount>0 ) {
-            log.info("OK -- time elapsed: "+Utils.formatElapsedTime(time0, System.currentTimeMillis()));
-            log.info("  blocks already in database:    "+Utils.formatThousands(rowCount));
-            log.info("========");
-            return;
+        SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        msgBuf.append(fileName+" started at "+sdt.format(new Date(time0))+"\n");
+
+
+        String mapKeyStr = "   [mapKey1="+mapKey1+", mapKey2="+mapKey2+"]\n";
+
+        int blocks = _getCount("SELECT COUNT(*) FROM synteny_ucsc WHERE map_key1="+mapKey1+" AND map_key2="+mapKey2);
+        int gaps = _getCount("SELECT COUNT(*) FROM synteny_ucsc_gaps WHERE map_key1="+mapKey1+" AND map_key2="+mapKey2);
+
+        msgBuf.append("  blocks count:    "+Utils.formatThousands(blocks)+mapKeyStr);
+        msgBuf.append("  gaps count:    "+Utils.formatThousands(gaps)+mapKeyStr);
+
+
+        if( dropAndReload ) {
+            int rowCount = dao.update("DELETE FROM synteny_ucsc WHERE map_key1=? AND map_key2=?", mapKey1, mapKey2);
+            msgBuf.append("  blocks deleted from database:    " + Utils.formatThousands(rowCount)+mapKeyStr);
+            rowCount = dao.update("DELETE FROM synteny_ucsc_gaps WHERE map_key1=? AND map_key2=?", mapKey1, mapKey2);
+            msgBuf.append("  gaps deleted from database:    " + Utils.formatThousands(rowCount)+mapKeyStr);
+
+        } else {
+            // see if we already loaded the data for this file
+            int rowCount = dao.getCount("SELECT count(*) FROM synteny_ucsc WHERE map_key1=? AND map_key2=?", mapKey1, mapKey2);
+            if (rowCount > 0) {
+                msgBuf.append("  blocks already in database:    " + Utils.formatThousands(rowCount)+"\n");
+                msgBuf.append("OK -- time elapsed: " + Utils.formatElapsedTime(time0, System.currentTimeMillis())+"\n");
+                msgBuf.append("========");
+                log.info(msgBuf.toString());
+                return;
+            }
         }
 
         BufferedReader in = Utils.openReader(fileName);
@@ -74,7 +108,7 @@ public class UcscLoader {
         String sql2 = "INSERT INTO synteny_ucsc_gaps (map_key1,map_key2,chromosome1,chromosome2,start_pos1,start_pos2,stop_pos1,stop_pos2," +
                 "strand,chain_type,chain_score,chain_level,pos_len1,pos_len2,original_level) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        Connection conn = dao.getConnection();
+        Connection conn = DataSourceFactory.getInstance().getDataSource().getConnection();
         conn.setAutoCommit(false);
 
         PreparedStatement ps = conn.prepareStatement(sql);
@@ -86,8 +120,6 @@ public class UcscLoader {
         psGaps.setInt(2, mapKey2);
 
         int linesProcessed = 0;
-        int blocksLoaded = 0;
-        int gapsLoaded = 0;
 
         String line;
         while( (line=in.readLine())!=null ) {
@@ -99,17 +131,24 @@ public class UcscLoader {
             String tgtChr = cols[2];
             if( tgtChr.startsWith("chr") ) {
                 tgtChr = tgtChr.substring(3);
+                if( tgtChr.length()>3 ) {
+                    continue; // skip unplaced scaffolds
+                }
+            } else {
+                // scaffold GenBank acc
             }
+
             String srcChr = cols[6];
             if( srcChr.startsWith("chr") ) {
                 srcChr = srcChr.substring(3);
-            }
-            if( tgtChr.length() > 3 || srcChr.length() > 3 ) {
-                // skip scaffold chromosomes
-                continue;
+                if( srcChr.length()>3 ) {
+                    continue; // skip unplaced scaffolds
+                }
+            } else {
+                // scaffold GenBank acc
             }
 
-            int chainLevel = Integer.parseInt(cols[1]); // origjnal level
+            int chainLevel = Integer.parseInt(cols[1]); // original level
             int adjLevel = (chainLevel-1)/2 + 1;
 
             int tgtStart = Integer.parseInt(cols[3]);
@@ -137,7 +176,6 @@ public class UcscLoader {
                 ps.setInt(14, srcLen);
                 ps.setInt(15, chainLevel);
                 ps.executeUpdate();
-                blocksLoaded++;
             } else {
                 psGaps.setString(3, tgtChr);
                 psGaps.setString(4, srcChr);
@@ -153,7 +191,6 @@ public class UcscLoader {
                 psGaps.setInt(14, srcLen);
                 psGaps.setInt(15, chainLevel);
                 psGaps.executeUpdate();
-                gapsLoaded++;
             }
 
             if( linesProcessed%250==0 ) {
@@ -165,11 +202,28 @@ public class UcscLoader {
         conn.close();
 
 
-        log.info("OK -- time elapsed: "+Utils.formatElapsedTime(time0, System.currentTimeMillis()));
-        log.info("  lines processed: "+Utils.formatThousands(linesProcessed));
-        log.info("  blocks loaded:    "+Utils.formatThousands(blocksLoaded));
-        log.info("  gaps loaded:    "+Utils.formatThousands(gapsLoaded));
-        log.info("========");
+        blocks = _getCount("SELECT COUNT(*) FROM synteny_ucsc WHERE map_key1="+mapKey1+" AND map_key2="+mapKey2);
+        gaps = _getCount("SELECT COUNT(*) FROM synteny_ucsc_gaps WHERE map_key1="+mapKey1+" AND map_key2="+mapKey2);
+
+        msgBuf.append("  lines processed: "+Utils.formatThousands(linesProcessed)+mapKeyStr);
+        msgBuf.append("  blocks count:    "+Utils.formatThousands(blocks)+mapKeyStr);
+        msgBuf.append("  gaps count:    "+Utils.formatThousands(gaps)+mapKeyStr);
+        msgBuf.append("OK -- time elapsed: "+Utils.formatElapsedTime(time0, System.currentTimeMillis())+"\n");
+        msgBuf.append("========");
+        log.info(msgBuf);
+    }
+
+    int _getCount(String sql) throws Exception {
+
+        Connection conn = DataSourceFactory.getInstance().getDataSource().getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        int count = -1;
+        if( rs.next() ) {
+            count = rs.getInt(1);
+        }
+        conn.close();
+        return count;
     }
 
     public void loadSynNetFile() throws Exception {
