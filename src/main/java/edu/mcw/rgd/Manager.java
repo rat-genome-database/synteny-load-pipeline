@@ -8,6 +8,10 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +34,7 @@ public class Manager {
         new XmlBeanDefinitionReader(bf).loadBeanDefinitions(new FileSystemResource("properties/AppConfigure.xml"));
         Manager manager = (Manager) (bf.getBean("manager"));
 
+        //manager.test1();
 
         // load data into SYNTENY_UCSC and SYNTENY_UCSC_GAPS tables
         boolean useUcscLoader = false;
@@ -425,6 +430,69 @@ public class Manager {
 
             return cmp;
         }
+    }
+
+    void test1() throws Exception {
+
+        String sql = "SELECT DISTINCT map_key1,chromosome1,start_pos1,stop_pos1 FROM synteny_ucsc order by dbms_random.random";
+        String sql2 = "select count(*) FROM ( \n" +
+                "  select distinct map_key1,chromosome1,start_pos1,stop_pos1 from synteny_ucsc\n" +
+                " where map_key1=? and chromosome1=? and start_pos1>=? and stop_pos1<=? and pos_len1<?\n" +
+                ")\n";
+        String sql3 = "UPDATE synteny_ucsc SET subblock_count1=? "+
+                " where map_key1=? and chromosome1=? and start_pos1>=? and stop_pos1<=?";
+
+        Connection conn = dao.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        PreparedStatement ps2 = conn.prepareStatement(sql2);
+        PreparedStatement ps3 = conn.prepareStatement(sql3);
+
+        int rows=0, rowsUpdated=0;
+        ResultSet rs = ps.executeQuery();
+        while( rs.next() ) {
+            rows++;
+
+            int mapKey1 = rs.getInt(1);
+            String chr1 = rs.getString(2);
+            int startPos1 = rs.getInt(3);
+            int stopPos1 = rs.getInt(4);
+            int posLen1 = stopPos1-startPos1;
+
+            ps2.setInt(1, mapKey1);
+            ps2.setString(2, chr1);
+            ps2.setInt(3, startPos1);
+            ps2.setInt(4, stopPos1);
+            ps2.setInt(5, posLen1);
+            ResultSet rs2 = ps2.executeQuery();
+            rs2.next();
+            int subBlockCount = rs2.getInt(1);
+            rs2.close();
+
+            if( subBlockCount>0 ) {
+
+                ps3.setInt(1, subBlockCount);
+                ps3.setInt(2, mapKey1);
+                ps3.setString(3, chr1);
+                ps3.setInt(4, startPos1);
+                ps3.setInt(5, stopPos1);
+                ps3.executeUpdate();
+
+                System.out.println("  MAP="+mapKey1+" CHR="+chr1+" START="+startPos1+" STOP="+stopPos1+" LEN="+posLen1+" SUBBLOCKS="+subBlockCount);
+
+                rowsUpdated++;
+            }
+
+            if( rows%100==0 ) {
+                System.out.println("ROWS="+rows+", UPDATED="+rowsUpdated);
+            }
+        }
+
+        conn.close();
+
+        System.out.println("ROWS="+rows+", UPDATED="+rowsUpdated);
+
+        System.exit(-1);
     }
 }
 
