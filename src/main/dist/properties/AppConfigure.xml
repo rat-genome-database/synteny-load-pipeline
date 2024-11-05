@@ -26,10 +26,10 @@
     <bean id="ucscLoader" class="edu.mcw.rgd.UcscLoader">
         <property name="version" value="Synteny Ucsc Loader  -- version 2024-11-05" />
 
-        <!-- if true, all assemblies will be fully reloaded;
-             if false, only new assemblies will be loaded
+        <!-- if 1, all assemblies will be fully reloaded;
+             if 0, only new assemblies will be loaded
           -->
-        <property name="dropAndReload" value="false" />
+        <property name="dropAndReload" value="1" />
 
         <property name="downloadPrefix" value="https://hgdownload.soe.ucsc.edu/goldenPath/"/>
         <property name="netFileList">

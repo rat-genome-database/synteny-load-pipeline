@@ -23,7 +23,7 @@ public class UcscLoader {
     private String version;
     private String downloadPrefix;
     private List<String> netFileList;
-    private boolean dropAndReload = false;
+    private int dropAndReload = 0;
 
     Logger log = Logger.getLogger("status");
 
@@ -32,7 +32,7 @@ public class UcscLoader {
         log.info(getVersion());
         log.info("   "+dao.getConnectionInfo());
 
-        log.info("   drop_and_reload = "+dropAndReload);
+        log.info("   drop_and_reload = "+(dropAndReload!=0 ? true : false) );
 
         List<String> processedAssemblies = new ArrayList<>(getNetFileList());
         Collections.shuffle(processedAssemblies);
@@ -86,7 +86,7 @@ public class UcscLoader {
         msgBuf.append("  gaps count:    "+Utils.formatThousands(gaps)+mapKeyStr);
 
 
-        if( dropAndReload ) {
+        if( dropAndReload>0 ) {
             int rowCount = dao.update("DELETE FROM synteny_ucsc WHERE map_key1=? AND map_key2=?", mapKey1, mapKey2);
             msgBuf.append("  blocks deleted from database:    " + Utils.formatThousands(rowCount)+mapKeyStr);
             rowCount = dao.update("DELETE FROM synteny_ucsc_gaps WHERE map_key1=? AND map_key2=?", mapKey1, mapKey2);
@@ -389,11 +389,11 @@ public class UcscLoader {
         this.netFileList = netFileList;
     }
 
-    public boolean isDropAndReload() {
+    public int getDropAndReload() {
         return dropAndReload;
     }
 
-    public void setDropAndReload(boolean dropAndReload) {
+    public void setDropAndReload(int dropAndReload) {
         this.dropAndReload = dropAndReload;
     }
 }
