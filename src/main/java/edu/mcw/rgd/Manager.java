@@ -11,7 +11,6 @@ import org.springframework.core.io.FileSystemResource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.Map;
 import java.util.stream.Collectors;

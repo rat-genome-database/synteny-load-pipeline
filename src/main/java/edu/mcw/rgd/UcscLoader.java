@@ -11,7 +11,6 @@ import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,19 +23,22 @@ public class UcscLoader {
     private String version;
     private String downloadPrefix;
     private List<String> netFileList;
-    private boolean dropAndReload = true;
+    private boolean dropAndReload = false;
 
     Logger log = Logger.getLogger("status");
 
-    public void run() throws Exception {
+    public void run() {
 
         log.info(getVersion());
         log.info("   "+dao.getConnectionInfo());
+
+        log.info("   drop_and_reload = "+dropAndReload);
 
         List<String> processedAssemblies = new ArrayList<>(getNetFileList());
         Collections.shuffle(processedAssemblies);
 
         processedAssemblies.parallelStream().forEach( netFileInfo -> {
+        //processedAssemblies.stream().forEach( netFileInfo -> {
 
             String[] cols = netFileInfo.split("\\|");
             int mapKey1 = Integer.parseInt(cols[0].trim());
@@ -59,6 +61,7 @@ public class UcscLoader {
                 String localFile = fd.downloadNew();
                 run(mapKey1, mapKey2, localFile, loadScaffolds);
             } catch( Exception e ) {
+                log.error("ERROR: critical problem with MAP_KEY1="+mapKey1+",  MAP_KEY2="+mapKey2);
                 throw new RuntimeException(e);
             }
         });
@@ -386,4 +389,11 @@ public class UcscLoader {
         this.netFileList = netFileList;
     }
 
+    public boolean isDropAndReload() {
+        return dropAndReload;
+    }
+
+    public void setDropAndReload(boolean dropAndReload) {
+        this.dropAndReload = dropAndReload;
+    }
 }

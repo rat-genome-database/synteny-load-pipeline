@@ -24,7 +24,13 @@
     </bean>
 
     <bean id="ucscLoader" class="edu.mcw.rgd.UcscLoader">
-        <property name="version" value="Synteny Ucsc Loader  -- version 2021-11-03" />
+        <property name="version" value="Synteny Ucsc Loader  -- version 2024-11-05" />
+
+        <!-- if true, all assemblies will be fully reloaded;
+             if false, only new assemblies will be loaded
+          -->
+        <property name="dropAndReload" value="false" />
+
         <property name="downloadPrefix" value="https://hgdownload.soe.ucsc.edu/goldenPath/"/>
         <property name="netFileList">
             <list>
@@ -32,6 +38,15 @@
                 <value>631|38|netCanFam3Hg38.txt.gz|canFam3/database/netHg38.txt.gz</value>
                 <value>631|35|netCanFam3Mm10.txt.gz|canFam3/database/netMm10.txt.gz</value>
                 <value>631|360|netCanFam3Rn6.txt.gz|canFam3/database/netRn6.txt.gz</value>
+                <value>631|637|netCanFam3CanFam4.txt.gz|canFam3/database/netCanFam4.txt.gz</value>
+
+                <value>637|631|netCanFam4CanFam3.txt.gz|canFam4/database/netCanFam3.txt.gz</value>
+                <value>637|38 |netCanFam4Hg38.txt.gz|canFam4/database/netHg38.txt.gz</value>
+                <value>637|35 |netCanFam4Mm10.txt.gz|canFam4/database/netMm10.txt.gz</value>
+
+                <value>633|38 |netCanFam6Hg38.txt.gz|canFam6/database/netHg38.txt.gz</value>
+                <value>633|35 |netCanFam6Mm10.txt.gz|canFam6/database/netMm10.txt.gz</value>
+                <value>633|239|netCanFam6Mm39.txt.gz|canFam6/database/netMm39.txt.gz</value>
 
                 <value>1311|38|netChlSab2Hg38.txt.gz|chlSab2/database/netHg38.txt.gz</value>
 
@@ -48,6 +63,8 @@
                 <value>38|360 |netHg38Rn6.txt.gz    |hg38/database/netRn6.txt.gz</value>
                 <value>38|372 |netHg38Rn7.txt.gz    |hg38/database/netRn7.txt.gz</value>
                 <value>38|911 |netHg38SusScr11.txt.gz|hg38/database/netSusScr11.txt.gz</value>
+                <value>38|637 |netHg38CanFam4.txt.gz|hg38/database/netCanFam4.txt.gz</value>
+                <value>38|633 |netHg38CanFam6.txt.gz|hg38/database/netCanFam6.txt.gz</value>
 
                 <value>35|1410|netMm10HetGla2.txt.gz|mm10/database/netHetGla2.txt.gz | scaffold</value>
                 <value>35|17  |netMm10Hg19.txt.gz   |mm10/database/netHg19.txt.gz</value>
@@ -56,12 +73,15 @@
                 <value>35|360 |netMm10Rn6.txt.gz    |mm10/database/netRn6.txt.gz</value>
                 <value>35|372 |netMm10Rn7.txt.gz    |mm10/database/netRn7.txt.gz</value>
                 <value>35|911 |netMm10SusScr11.txt.gz|mm10/database/netSusScr11.txt.gz</value>
+                <value>35|637 |netMm10CanFam4.txt.gz|mm10/database/netCanFam4.txt.gz</value>
+                <value>35|633 |netMm10CanFam6.txt.gz|mm10/database/netCanFam6.txt.gz</value>
 
                 <value>239|38  |netMm39Hg38.txt.gz   |mm39/database/netHg38.txt.gz</value>
                 <value>239|513 |netMm39PanPan3.txt.gz|mm39/database/netPanPan3.txt.gz</value>
                 <value>239|360 |netMm39Rn6.txt.gz    |mm39/database/netRn6.txt.gz</value>
                 <value>239|372 |netMm39Rn7.txt.gz    |mm39/database/netRn7.txt.gz</value>
                 <value>239|910 |netMm39SusScr3.txt.gz|mm39/database/netSusScr3.txt.gz</value>
+                <value>239|633 |netMm39CanFam6.txt.gz|mm39/database/netCanFam6.txt.gz</value>
 
                 <value>513|38  |netPanPan3Hg38.txt.gz |panPan3/database/netHg38.txt.gz</value>
                 <value>513|35  |netPanPan3Mm10.txt.gz |panPan3/database/netMm10.txt.gz</value>
