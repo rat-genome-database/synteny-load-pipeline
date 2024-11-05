@@ -3,7 +3,8 @@ package edu.mcw.rgd;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.Utils;
 import edu.mcw.rgd.process.mapping.MapManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
@@ -23,9 +24,7 @@ public class Manager {
     private List<Integer> assemblies;
     private  Map<MappedOrtholog,Integer> indexedOrthologs;
 
-    Logger log = Logger.getLogger("core");
-
-    Logger logSummary = Logger.getLogger("status");
+    Logger log = LogManager.getLogger("status");
 
     public static void main(String[] args) throws Exception {
 
@@ -77,8 +76,8 @@ public class Manager {
 
         String species1 = SpeciesType.getCommonName(speciesTypeKey1);
         log.info("START: species = " + species1 + " and assembly "+ mapKey);
-        logSummary.info("Summary for species "+ species1+"\n");
-        logSummary.info("=========================\n");
+        log.info("Summary for species "+ species1+"\n");
+        log.info("=========================\n");
         List<Integer> assemblies = getAssemblies();
         for(int mapKey2: assemblies) {
             int speciesTypeKey2 = dao.getSpeciesTypeKeyForMap(mapKey2);
@@ -144,7 +143,7 @@ public class Manager {
             dao.insertSynteny(block,mapKey1,mapKey2);
         }
 
-        logSummary.info("Blocks between assemblies "+map1+ " and "+map2+ "=" + blocks.size()+"\n");
+        log.info("Blocks between assemblies "+map1+ " and "+map2+ "=" + blocks.size()+"\n");
 
     }
 

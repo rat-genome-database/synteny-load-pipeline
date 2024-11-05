@@ -1,5 +1,6 @@
 Nov 05, 2024
   added loading of dog assemblies canFam4 and canFam6
+  upgraded to log4j2
 
 Nov 17, 2023
   updated to java 17

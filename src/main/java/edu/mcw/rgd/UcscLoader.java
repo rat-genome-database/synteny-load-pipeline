@@ -3,7 +3,8 @@ package edu.mcw.rgd;
 import edu.mcw.rgd.dao.DataSourceFactory;
 import edu.mcw.rgd.process.FileDownloader;
 import edu.mcw.rgd.process.Utils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,7 +26,7 @@ public class UcscLoader {
     private List<String> netFileList;
     private int dropAndReload = 0;
 
-    Logger log = Logger.getLogger("status");
+    Logger log = LogManager.getLogger("status");
 
     public void run() {
 
