@@ -16,6 +16,8 @@ java {
 mainClassName = 'edu.mcw.rgd.Manager'
 String myAppName = 'SyntenyLoadPipeline'
 
+project.archivesBaseName = myAppName
+
 repositories {
     mavenCentral()
 }
